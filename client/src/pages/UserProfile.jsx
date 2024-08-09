@@ -22,7 +22,7 @@ const UserProfile = () => {
   };
 
   const handleExploreRecipesClick = () => {
-    navigate('/recipes'); // placeholder for redirecting to the featured recipes page
+    navigate('/featured-recipes'); // placeholder for redirecting to the featured recipes page
   };
 
   return (

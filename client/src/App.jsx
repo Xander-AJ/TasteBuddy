@@ -2,20 +2,22 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
 import UserRecipes from './pages/UserRecipes';
 import UserProfile from './pages/UserProfile';
+import FeaturedRecipes from "./pages/FeaturedRecipe";
+  // Add this line
 
 function App() {
   return (
     <Router>
       <nav>
-        <Link to="/recipes">Recipes</Link>
         <Link to="/profile">Profile</Link>
-        <Link to="/featured-recipes">Featured Recipes</Link>
+        <Link to="/featured-recipes">Featured-Recipes</Link>
+        <Link to="/recipes">My-Recipes</Link>
       </nav>
       <Routes>
         <Route path="/" element={<Navigate to="/recipes" />} />
-        <Route path="/recipes" element={<UserRecipes />} />
         <Route path="/profile" element={<UserProfile />} />
-        <Route path="/featured-recipes" element={<FeaturedRecipes />} />
+        <Route path="/recipes" element={<UserRecipes />} />
+        <Route path="/featured-recipes" element={<FeaturedRecipes />} /> {/* This is where FeaturedRecipes is used */}
       </Routes>
     </Router>
   );
