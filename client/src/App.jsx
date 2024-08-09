@@ -14,7 +14,7 @@ function App() {
         <Link to="/recipes">My-Recipes</Link>
       </nav>
       <Routes>
-        <Route path="/" element={<Navigate to="/recipes" />} />
+        <Route path="/" element={<Navigate to="/profile" />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/recipes" element={<UserRecipes />} />
         <Route path="/featured-recipes" element={<FeaturedRecipes />} /> {/* This is where FeaturedRecipes is used */}
