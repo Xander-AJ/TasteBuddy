@@ -37,7 +37,7 @@ const RecipeCard = () => {
     chefName: 'Chef John Doe',
     image: 'https://via.placeholder.com/800x600',
     ingredients: 'Pasta, Tomato Sauce, Cheese, Herbs',
-    instructions: 'Cook pasta, add sauce, sprinkle cheese, and garnish with herbs, ........................., ................, ......................, .................................., ................................., ggggggggggggggggggggg, yyyyyyyyyyyyyyyyyyy',
+    instructions: 'Cook pasta, add sauce, sprinkle cheese, and garnish with herbs',
     url: 'https://example.com/recipe',
     moreInfoUrl: 'https://example.com/recipe-details',
     rating: 4.5,
