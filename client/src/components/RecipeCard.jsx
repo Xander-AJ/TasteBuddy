@@ -1,60 +1,67 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 
-const RecipeCard = ({ id, title, image, rating, onDelete }) => {
-  const navigate = useNavigate();
 
-  // generate stars based on the rating
-  const renderStars = () => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <svg
-          key={i}
-          className={`w-6 h-6 ${i <= rating ? 'text-yellow-500' : 'text-gray-300'}`}
-          fill="currentColor"
-          viewBox="0 0 20 20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M9.049 2.927C9.316 2.282 10.684 2.282 10.951 2.927L12.221 6.25H15.5C16.194 6.25 16.479 7.105 15.957 7.553L13.305 9.879L14.575 13.196C14.842 13.841 14.158 14.436 13.635 13.988L10.982 11.662L8.329 13.988C7.806 14.436 7.122 13.841 7.389 13.196L8.659 9.879L6.007 7.553C5.485 7.105 5.771 6.25 6.464 6.25H9.743L11.013 2.927Z"/>
-        </svg>
-      );
+import { FaFacebook, FaInstagram, FaWhatsapp } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
+
+const RecipeCard = ({ recipe, shareOnSocialMedia }) => {
+  const handleShare = (platform) => {
+    let url = '';
+    switch (platform) {
+      case 'facebook':
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
+        break;
+      case 'twitter':
+        url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(recipe.title)}`;
+        break;
+
+
+      case 'instagram':
+        // Note: Instagram doesn't have a direct sharing URL, so this might need to be handled differently
+        url = `https://www.instagram.com/`;
+        break;
+      case 'whatsapp':
+        url = `https://api.whatsapp.com/send?text=${encodeURIComponent(recipe.title + ' ' + window.location.href)}`;
+        break;
+      default:
+        break;
     }
-    return stars;
+    if (url) {
+      window.open(url, '_blank');
+    }
   };
 
   return (
-    <div className="bg-green-100 rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 flex flex-col font-urbanist">
-      <img src={image} alt={title} className="w-full h-48 object-cover" />
-      <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <div className="flex">{renderStars()}</div>
-        <div className="flex-grow"></div>
-        <div className="flex justify-between items-center">
-          <div className="flex space-x-2">
-            <button
-              onClick={() => onDelete(id)}
-              className="p-2 text-red-500 hover:text-red-700"
-              title="Delete recipe"
-            >
-              <FontAwesomeIcon icon={faTrash} />
-            </button>
-            <button
-              onClick={() => navigate(`/recipes/${id}/edit`)}
-              className="p-2 text-green-400 hover:text-customGreen"
-              title="Edit recipe"
-            >
-              <FontAwesomeIcon icon={faEdit} />
-            </button>
-          </div>
-          <button
-            onClick={() => navigate(`/recipes/${id}`)}
-            className="mt-2 px-4 py-2 bg-green-100 text-black border-2 border-black rounded-full hover:bg-customGreen self-end"
-          >
-            View Recipe
-          </button>
+    <div key={recipe.id} className="transform transition duration-300 hover:scale-105 bg-white rounded-xl shadow-xl overflow-hidden">
+      <div className="relative h-64">
+        <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover" />
+        <div className="absolute top-0 right-0 bg-green-600 text-white px-3 py-1 rounded-bl-lg">
+          {recipe.dietType}
+        </div>
+      </div>
+      <div className="p-6">
+        <h3 className="text-2xl font-bold mb-2 text-green-800">{recipe.title}</h3>
+        <div className="flex items-center mb-4">
+          <img src={recipe.chefImage} alt={recipe.chefName} className="w-10 h-10 rounded-full mr-3" />
+          <span className="text-gray-600">{recipe.chefName}</span>
+        </div>
+        <div className="flex justify-between text-sm text-gray-500 mb-4">
+          <span>Prep Time: {recipe.prepTime}</span>
+          <span>Servings: {recipe.servings}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-yellow-500">★ {recipe.rating}</span>
+          <span className="text-green-600">{recipe.countryOfOrigin}</span>
+        </div>
+        <button className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition duration-300 transform hover:scale-105">
+          View Recipe
+        </button>
+        <div className="mt-4 flex justify-end space-x-4">
+          <FaFacebook className="text-blue-600 cursor-pointer text-xl hover:text-blue-800 transition-colors duration-300" onClick={() => handleShare('facebook')} />
+          <FaXTwitter className="text-black cursor-pointer text-xl hover:text-gray-700 transition-colors duration-300" onClick={() => handleShare('twitter')} />
+
+          <FaInstagram className="text-pink-600 cursor-pointer text-xl hover:text-pink-800 transition-colors duration-300" onClick={() => handleShare('instagram')} />
+          <FaWhatsapp className="text-green-500 cursor-pointer text-xl hover:text-green-700 transition-colors duration-300" onClick={() => handleShare('whatsapp')} />
         </div>
       </div>
     </div>
