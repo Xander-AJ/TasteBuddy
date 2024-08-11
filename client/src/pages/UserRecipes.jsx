@@ -90,7 +90,8 @@ const UserRecipes = () => {
   };
 
   const handleDeleteRecipe = (id) => {
-    setRecipes(recipes.filter(recipe => recipe.id !== id));
+
+    setRecipes(prevRecipes => prevRecipes.filter(recipe => recipe.id !== id));
   };
 
   return (

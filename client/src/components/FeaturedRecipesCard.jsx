@@ -125,7 +125,6 @@ const RecipeCard = () => {
           <span>{liked ? 'Liked' : 'Like'}</span>
         </button>
         <div className="flex items-center space-x-1">
-
           <div className="flex">
             {renderStars(recipe.rating)}
           </div>
