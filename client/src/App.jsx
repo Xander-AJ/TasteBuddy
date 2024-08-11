@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-ro
 import UserRecipes from './pages/UserRecipes';
 import UserProfile from './pages/UserProfile';
 import FeaturedRecipes from "./pages/FeaturedRecipe";
+import RecipeInfo from './pages/RecipeInfo';
   // Add this line
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/recipes" element={<UserRecipes />} />
         <Route path="/featured-recipes" element={<FeaturedRecipes />} /> {/* This is where FeaturedRecipes is used */}
+        <Route path="/recipes/:id" element={<RecipeInfo />} />
       </Routes>
     </Router>
   );
