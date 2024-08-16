@@ -1,27 +1,17 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
-import UserRecipes from './pages/UserRecipes';
-import UserProfile from './pages/UserProfile';
-import FeaturedRecipes from "./pages/FeaturedRecipe";
-import RecipeInfo from './pages/RecipeInfo';
-  // Add this line
+import React from "react";
+import NavBar from "./components/NavBar";
+import Footer from "./components/Footer";
+import { Outlet } from "react-router-dom";
 
 function App() {
   return (
-    <Router>
-      <nav>
-        <Link to="/profile">Profile</Link>
-        <Link to="/featured-recipes">Featured-Recipes</Link>
-        <Link to="/recipes">My-Recipes</Link>
-      </nav>
-      <Routes>
-        <Route path="/" element={<Navigate to="/profile" />} />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route path="/recipes" element={<UserRecipes />} />
-        <Route path="/featured-recipes" element={<FeaturedRecipes />} /> {/* This is where FeaturedRecipes is used */}
-        <Route path="/recipes/:id" element={<RecipeInfo />} />
-      </Routes>
-    </Router>
+    <div className="flex flex-col min-h-screen">
+      <NavBar />
+      <main className="flex-grow">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
   );
 }
 
