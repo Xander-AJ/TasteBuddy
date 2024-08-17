@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 flask-restful = "*"
 flask-bcrypt = "*"
+firebase-admin = "*"
 
 [dev-packages]
 
