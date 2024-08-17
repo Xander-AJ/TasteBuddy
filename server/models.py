@@ -1,12 +1,20 @@
 from datetime import datetime
+from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from sqlalchemy import MetaData
+
+# metadata = MetaData(
+#     naming_convention={
+#         "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+#     }
+# )
 
 db = SQLAlchemy()
+
 bcrypt = Bcrypt()
 
 class User(db.Model):
-
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -16,22 +24,31 @@ class User(db.Model):
     firstName = db.Column(db.String(120), nullable=False)
     lastName = db.Column(db.String(120), nullable=False)
     title = db.Column(db.String(120), nullable=False)
-    aboutMe = db.Column(db.Text),
+    aboutMe = db.Column(db.Text)
     profilePicture = db.Column(db.String)
 
-    # Relationship definitions
-    bookmarks = db.relationship('Bookmark', backref='user', lazy=True, cascade='all, delete-orphan')
-    likes = db.relationship('Like', backref='user', lazy=True, cascade='all, delete-orphan')
-    ratings = db.relationship('Rating', backref='user', lazy=True, cascade='all, delete-orphan')
-    notifications = db.relationship('Notification', backref='user', lazy=True, cascade='all, delete-orphan')
+    bookmarks = db.relationship('Bookmark', back_populates='user', lazy=True, cascade='all, delete-orphan')
+    likes = db.relationship('Like', back_populates='user', lazy=True, cascade='all, delete-orphan')
+    ratings = db.relationship('Rating', back_populates='user', lazy=True, cascade='all, delete-orphan')
+    notifications = db.relationship('Notification', back_populates='user', lazy=True, cascade='all, delete-orphan')
     recipes = db.relationship('Recipe', back_populates='user', lazy=True, cascade='all, delete-orphan')
+
+    # @property
+    # def password(self):
+    #     return self._password
+
+    # @password.setter
+    # def password(self, plain_text_password):
+    #     self._password = bcrypt.generate_password_hash(plain_text_password).decode('utf-8')
+
+    # def check_password(self, plain_text_password):
+    #     return bcrypt.check_password_hash(self._password, plain_text_password)
 
     def to_dict(self):
         return {
             'id': self.id,
             'email': self.email,
             'username': self.username,
-            'password': self.password,
             'firstName': self.firstName,
             'lastName': self.lastName,
             'title': self.title,
@@ -45,7 +62,6 @@ class User(db.Model):
         }
 
 class Recipe(db.Model):
-    
     __tablename__ = 'recipes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -63,15 +79,12 @@ class Recipe(db.Model):
     countryOfOrigin = db.Column(db.String(200), nullable=False)
     dietType = db.Column(db.String(200), nullable=False)
 
-    # Foreign key that stores the user ID
     userId = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    # Relationship definitions
-    bookmarks = db.relationship('Bookmark', backref='recipe', lazy=True)
-    likes = db.relationship('Like', backref='recipe', lazy=True)
-    ratings = db.relationship('Rating', backref='recipe', lazy=True)
+    bookmarks = db.relationship('Bookmark', back_populates='recipe', lazy=True)
+    likes = db.relationship('Like', back_populates='recipe', lazy=True)
+    ratings = db.relationship('Rating', back_populates='recipe', lazy=True, cascade="all, delete-orphan")
     user = db.relationship('User', back_populates='recipes', lazy=True)
-    
 
     def to_dict(self):
         return {
@@ -95,12 +108,14 @@ class Recipe(db.Model):
         }
 
 class Bookmark(db.Model):
-
     __tablename__ = 'bookmarks'
 
     id = db.Column(db.Integer, primary_key=True)
     userId = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     recipeId = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable=False)
+
+    user = db.relationship('User', back_populates='bookmarks')
+    recipe = db.relationship('Recipe', back_populates='bookmarks')
 
     def to_dict(self):
         return {
@@ -116,10 +131,13 @@ class Like(db.Model):
     userId = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     recipeId = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable=False)
 
+    user = db.relationship('User', back_populates='likes')
+    recipe = db.relationship('Recipe', back_populates='likes')
+
     def to_dict(self):
         return {
             'id': self.id,
-            'userId': self.userId,
+            'userId': self.user_id,
             'recipeId': self.recipeId,
         }
 
@@ -130,6 +148,9 @@ class Rating(db.Model):
     userId = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     recipeId = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
+
+    user = db.relationship('User', back_populates='ratings')
+    recipe = db.relationship('Recipe', back_populates='ratings')
 
     def to_dict(self):
         return {
@@ -147,6 +168,8 @@ class Notification(db.Model):
     message = db.Column(db.String(200), nullable=False)
     isRead = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', back_populates='notifications')
 
     def to_dict(self):
         return {
