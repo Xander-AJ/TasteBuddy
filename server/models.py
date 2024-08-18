@@ -1,8 +1,8 @@
 from datetime import datetime
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
 from sqlalchemy import MetaData
+from sqlalchemy_serializer import SerializerMixin
 
 # metadata = MetaData(
 #     naming_convention={
@@ -12,9 +12,9 @@ from sqlalchemy import MetaData
 
 db = SQLAlchemy()
 
-bcrypt = Bcrypt()
 
-class User(db.Model):
+#======================================= USER MODEL =========================================================
+class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -32,6 +32,7 @@ class User(db.Model):
     ratings = db.relationship('Rating', back_populates='user', lazy=True, cascade='all, delete-orphan')
     notifications = db.relationship('Notification', back_populates='user', lazy=True, cascade='all, delete-orphan')
     recipes = db.relationship('Recipe', back_populates='user', lazy=True, cascade='all, delete-orphan')
+    comments = db.relationship('Comment', back_populates='user', lazy=True, cascade='all, delete-orphan')
 
     # @property
     # def password(self):
@@ -60,8 +61,14 @@ class User(db.Model):
             'ratings': [rating.to_dict() for rating in self.ratings],
             'notifications': [notification.to_dict() for notification in self.notifications],
         }
+    
+    def __repr__(self):
+        return f'<User {self.username}, {self.email}, {self.password}, {self.firstName} >'
+    
 
-class Recipe(db.Model):
+#======================================= RECIPE MODEL =========================================================
+
+class Recipe(db.Model, SerializerMixin):
     __tablename__ = 'recipes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -85,7 +92,8 @@ class Recipe(db.Model):
     likes = db.relationship('Like', back_populates='recipe', lazy=True)
     ratings = db.relationship('Rating', back_populates='recipe', lazy=True, cascade="all, delete-orphan")
     user = db.relationship('User', back_populates='recipes', lazy=True)
-
+    comments = db.relationship('Comment', back_populates='recipe', lazy=True, cascade='all, delete-orphan')
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -106,8 +114,15 @@ class Recipe(db.Model):
             'likes': [like.to_dict() for like in self.likes],
             'ratings': [rating.to_dict() for rating in self.ratings],
         }
+    
+    def __repr__(self):
+        return f'<Recipe {self.id}, {self.chefName}, {self.title}, {self.dietType}, {self.countryOfOrigin}, {self.comments}>'
+    
 
-class Bookmark(db.Model):
+#======================================= BOOKMARK MODEL =========================================================
+
+class Bookmark(db.Model, SerializerMixin):
+
     __tablename__ = 'bookmarks'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -123,8 +138,14 @@ class Bookmark(db.Model):
             'userId': self.userId,
             'recipeId': self.recipeId,
         }
+    
+    def __repr__(self):
+        return f'<Bookmark {self.id}, {self.userId}, {self.recipeId}>'
+    
 
-class Like(db.Model):
+#======================================= LIKE MODEL =========================================================
+
+class Like(db.Model, SerializerMixin):
     __tablename__ = "likes"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -137,11 +158,17 @@ class Like(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'userId': self.user_id,
+            'userId': self.userId,
             'recipeId': self.recipeId,
         }
+    
+    def __repr__ (self):
+        return f'<Like {self.id}, {self.userId}, {self.recipeId}>'
 
-class Rating(db.Model):
+    
+#======================================= RATING MODEL =========================================================
+
+class Rating(db.Model, SerializerMixin):
     __tablename__ = "ratings"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -159,8 +186,13 @@ class Rating(db.Model):
             'recipeId': self.recipeId,
             'rating': self.rating,
         }
+    
+    def __repr__(self):
+        return f'<Rating {self.id}, {self.userId}, {self.recipeId}, {self.rating}>'
+    
+#======================================= NOTIFICATION MODEL =========================================================
 
-class Notification(db.Model):
+class Notification(db.Model, SerializerMixin):
     __tablename__ = "notifications"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -179,3 +211,65 @@ class Notification(db.Model):
             'isRead': self.isRead,
             'timestamp': self.timestamp.isoformat(),
         }
+    
+    def __repr__(self):
+        return f'<Notification {self.id}, {self.message}, {self.timestamp}>'
+
+#======================================= COMMENT MODEL =========================================================
+
+class Comment(db.Model, SerializerMixin):
+
+    __tablename__ = "comments"
+
+    id = db.Column(db.Integer, primary_key=True)
+    recipeId = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable=False)
+    userId = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    recipe = db.relationship('Recipe', back_populates='comments')
+    user = db.relationship('User', back_populates='comments')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'recipeId': self.recipeId,
+            'userId': self.userId,
+            'comment': self.comment,
+            'timestamp': self.timestamp.isoformat(),
+        }
+ 
+    def __repr__(self):
+        return f'<Comment {self.id}, {self.content}, {self.timestamp}>'
+
+
+#======================================= CONTACTUS MODEL =========================================================
+
+class Contact(db.Model, SerializerMixin):
+
+    __tablename__ = "contactus"
+
+    id = db.Column(db.Integer, primary_key=True)
+    firstName = db.Column(db.String(50), nullable=False)
+    lastName = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    phoneNumber = db.Column(db.String(20), nullable=False)
+    inquiryType = db.Column(db.String(50), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'firstName': self.firstName,
+            'lastName': self.lastName,
+            'email': self.email,
+            'phoneNumber': self.phoneNumber,
+            'inquiryType': self.inquiryType,
+            'message': self.message
+        }
+
+    def __repr__(self):
+        return f'<Contact {self.id}, {self.firstName}, {self.email}, {self.phoneNumber}, {self.inquiryType}, {self.message}>'
+
+
+

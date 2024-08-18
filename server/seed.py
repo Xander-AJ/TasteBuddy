@@ -1,30 +1,28 @@
 from datetime import datetime
 from app import app
-from models import db, User, Recipe, Bookmark, Like, Notification, Rating
+from models import db, User, Recipe, Bookmark, Like, Notification, Rating, Comment, Contact
 from flask_bcrypt import Bcrypt
 
-# Create an application context for seeding
-# app = create_app()  # Adjust this line if you use a different function or configuration
-# app.app_context().push()
-
-# Initialize Bcrypt if necessary
+# Initialize Bcrypt
 bcrypt = Bcrypt(app)
 
 with app.app_context():
 
     # Delete all rows in tables
-    User.query.delete()
-    Recipe.query.delete()
+    Comment.query.delete()
+    Contact.query.delete()
     Bookmark.query.delete()
     Notification.query.delete()
     Like.query.delete()
     Rating.query.delete()
+    Recipe.query.delete()
+    User.query.delete()
 
     def seed_users():
         user1 = User(
             email='user1@example.com',
             username='user1',
-            password= bcrypt.generate_password_hash("newpass").decode("utf-8"),  # This will be hashed by the setter method
+            password=bcrypt.generate_password_hash("newpass").decode("utf-8"),
             firstName='Mike',
             lastName='Doe',
             title='Chef',
@@ -62,7 +60,7 @@ with app.app_context():
             servings=4,
             countryOfOrigin='Italy',
             dietType='Non-Vegetarian',
-            userId=1  # Link to the user created above
+            userId=1
         )
 
         recipe2 = Recipe(
@@ -70,8 +68,8 @@ with app.app_context():
             chefImage='https://img.freepik.com/free-photo/horizontal-shot-young-attractive-african-cook-cutting-vegetables-with-knife_181624-52268.jpg?ga=GA1.2.1322605301.1720433628&semt=ais_hybrid',
             title='Chicken Biryani',
             image='https://plus.unsplash.com/premium_photo-1694141251673-1758913ade48?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            ingredients='Cucumbers, tomatoes, olives, feta, onions',
-            instructions='Combine all ingredients and toss with olive oil and vinegar.',
+            ingredients='1 whole Chicken (Cut into 8 pieces), 5 whole tomatoes (chopped), 6 onions Sliced, (Deep fried until golden and crispy),1 chilli (Chopped), 3 tbsp tomato paste, 1–2 tbsp Cumin (ground), 1 tbsp sugar, 1 tsp cinnamon (ground), 1/4 tsp cloves (ground), 1 tsp cardamom (ground), 1 tsp black pepper, 1 tsp ginger (crushed), 1 tsp garlic (crushed). 1 1/2 cup water, 3 potatoes (peeled; halved & deep fried), 3 tbsp Coriander (roughly chopped), 1 chilli (chopped), 1/2 cup Mala (or natural yoghurt)',
+            instructions='In a thick bottomed pan, add 1 tbsp ghee followed by the tomato paste and fry it for 1 min on medium heat, Add 1 tbsp cumin, 1/2 tsp ground cinnamon, 1 tsp ground cardamom, 1/2 tsp black pepper and a few cloves (4-5), Cook the spices for 2 min then add the chopped tomatoes and cover the pan, After 13 min, add the chicken, garlic, ginger, fresh chilly and, salt, Cover and cook until chicken soften (about 15min), Add 1/2 cup of mala or natural yoghurt cover and reduce the heat, Deep fry your sliced onions if you haven’t and also fry the potatoes until a skin forms, Add the deep friend and onions and potatoes to the biryani, Cook until the potatoes are soft, Serve with rice.',
             url='http://example.com/greek-salad',
             moreInfoUrl='http://example.com/more-info-greek-salad',
             rating=4,
@@ -81,7 +79,6 @@ with app.app_context():
             dietType='Meatarian',
             userId=2  # Link to the user created above
         )
-
         db.session.add(recipe1)
         db.session.add(recipe2)
         db.session.commit()
@@ -150,11 +147,54 @@ with app.app_context():
         db.session.add(notification2)
         db.session.commit()
 
-# Call the seeding functions 
-  # Create tables
+    def seed_comments():
+        comment1 = Comment(
+            recipeId=1,
+            userId=2,
+            content='This spaghetti is amazing!',
+            timestamp=datetime.utcnow()
+        )
+
+        comment2 = Comment(
+            recipeId=2,
+            userId=1,
+            content='The biryani is full of flavor!',
+            timestamp=datetime.utcnow()
+        )
+
+        db.session.add(comment1)
+        db.session.add(comment2)
+        db.session.commit()
+
+    def seed_contacts():
+        contact1 = Contact(
+            firstName='John',
+            lastName='Smith',
+            email='john.smith@example.com',
+            phoneNumber='123-456-7890',
+            inquiryType='Support',
+            message='I need help with my account.'
+        )
+
+        contact2 = Contact(
+            firstName='Mary',
+            lastName='Johnson',
+            email='mary.johnson@example.com',
+            phoneNumber='987-654-3210',
+            inquiryType='Feedback',
+            message='Great website! I love the recipes.'
+        )
+
+        db.session.add(contact1)
+        db.session.add(contact2)
+        db.session.commit()
+
+    # Call all the seeding functions
     seed_users()
     seed_recipes()
     seed_bookmarks()
     seed_likes()
     seed_ratings()
     seed_notifications()
+    seed_comments()
+    seed_contacts()
