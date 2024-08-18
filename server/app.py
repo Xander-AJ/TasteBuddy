@@ -17,17 +17,13 @@ app.config["SECRET_KEY"] = "JKSRVHJVFBSRDFV"+str(random.randint(1,1000000000000)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-from models import db, User, Recipe, Bookmark, Like, Notification, Rating
-migrate = Migrate(app, db)
+from models import db, User, Recipe, Bookmark, Like, Notification, Rating, Comment, Contact
+
+migrate = Migrate(app, db, render_as_batch=True)
 db.init_app(app)
 
 
-# Contact Us
-@app.route('/contactus', methods=['POST'])
-def contact_us():
-    data = request.get_json()
-    # Handle the data, such as sending an email or storing it in a database.
-    return jsonify({'message': 'Contact form submitted successfully'}), 200
+#======================================= SIGNUP ROUTES ================================================================
 
 @app.route('/signup', methods=['POST'])
 def register():
@@ -45,6 +41,9 @@ def register():
 
     return jsonify({'message': 'User registered successfully'}), 201
 
+
+#======================================= LOGIN ROUTES =========================================================
+
 # Login
 @app.route("/login", methods=["POST"])
 def login():
@@ -59,6 +58,9 @@ def login():
 
     else:
         return jsonify({"message":"Invalid email or password"}), 401
+    
+
+#======================================= CURRENT USER ROUTES =========================================================
 
 # Fetch current user
 @app.route("/currentUser", methods=["GET"])
@@ -71,6 +73,9 @@ def get_current_user():
         return jsonify({"id":currentUser.id, "name":currentUser.name, "email":currentUser.email}), 200
     else:
         jsonify({"error":"User not found"}), 404
+
+
+#======================================= LOGOUT ROUTES =========================================================
 
 # Logout
 BLACKLIST = set()
@@ -85,7 +90,8 @@ def logout():
     BLACKLIST.add(jti)
     return jsonify({"success":"Successfully logged out"}), 200
 
-#================================USERS==========================================================
+
+#====================================== USERS ROUTES ==================================================================
 # Add user
 @app.route('/users', methods=['POST'])
 def create_user():
@@ -134,7 +140,7 @@ def delete_user(id):
     return jsonify({'message': 'User deleted successfully'}), 200
 
 
-# ==================================RECIPES===========================================================
+# ================================== RECIPES ROUTES ===========================================================
 # Get All Recipes
 @app.route('/recipes', methods=['GET'])
 @jwt_required()
@@ -208,7 +214,7 @@ def delete_recipe(id):
     return jsonify({'message': 'Recipe deleted successfully'}), 200
 
 
-# ==================================BOOKMARKS===========================================================
+# ================================== BOOKMARKS ROUTES ===========================================================
 # GET bookmarks
 @app.route('/bookmarks', methods=['GET'])
 def get_bookmarks():
@@ -251,7 +257,7 @@ def delete_bookmark(id):
     db.session.commit()
     return '', 204
 
-# ==================================LIKES===========================================================
+# ================================== LIKES ROUTES ==============================================================
 # GET likes
 @app.route('/likes', methods=['GET'])
 def get_likes():
@@ -294,7 +300,8 @@ def delete_like(id):
     db.session.commit()
     return '', 204
 
-# ==================================RATINGS===========================================================\
+
+# ================================== RATINGS ROUTES ===========================================================
 # GET Ratings
 @app.route('/ratings', methods=['GET'])
 def get_ratings():
@@ -340,7 +347,7 @@ def delete_rating(id):
     return '', 204
 
 
-# ==================================NOTIFICATIONS===========================================================
+# ================================== NOTIFICATIONS ROUTES ===========================================================
 # Get Notifications
 @app.route('/notifications', methods=['GET'])
 def get_notifications():
@@ -384,6 +391,85 @@ def delete_notification(id):
     db.session.delete(notification)
     db.session.commit()
     return '', 204
+
+#======================================== COMMENTS ROUTES =====================================================================
+# Get All Comments
+
+@app.route('/comments', methods = ["GET"])
+@jwt_required()
+def get_comments():
+    comments = Comment.query.all()
+    return jsonify([comment.to_dict() for comment in comments]), 200
+
+# Get a Single Comment
+@app.route('/comments/<int:id>', methods = ["GET"])
+@jwt_required()
+def get_comment(id):
+    comment = Comment.query.get_or_404(id)
+    return jsonify(comment.to_dict()), 200
+
+# POST a Comment
+@app.route('/comments', methods = ["POST"])
+@jwt_required()
+def create_comment():
+    data = request.get_json()
+    new_comment = Comment(
+        userId = data['userId'],
+        recipeId = data['recipeId'],
+        content = data['content']
+    )
+    db.session.add(new_comment)
+    db.session.commit()
+    return jsonify(new_comment.to_dict()), 201
+
+# PUT a Comment
+@app.route('/comments/<int:id>', methods = ["PUT"])
+@jwt_required()
+def update_comment(id):
+    comment = Comment.query.get_or_404(id)
+    data = request.get_json()
+    comment.userId = data.get('userId', comment.userId)
+    comment.recipeId = data.get('recipeId', comment.recipeId)
+    comment.content = data.get('content', comment.content)
+    db.session.commit()
+    return jsonify(comment.to_dict()), 200
+
+# Delete a Comment
+@app.route('/comments/<int:id>', methods = ["DELETE"])
+@jwt_required()
+def delete_comment(id):
+    comment = Comment.query.get_or_404(id)
+    db.session.delete(comment)
+    db.session.commit()
+    return '', 204
+
+#======================================== CONTACT US ROUTES =====================================================================
+
+@app.route('/contactus', methods=['POST'])
+def contact():
+    if request.method == 'POST':
+        try:
+            data = request.json
+
+            if not all(key in data for key in ['firstName', 'lastName', 'email', 'phoneNumber', 'inquiryType', 'message']):
+                return jsonify({'error': 'Missing required fields'}), 400
+
+            new_contact = Contact(
+                firstName = data['firstName'],
+                lastName = data['lastName'],
+                email = data['email'],
+                phoneNumber = data['phoneNumber'],
+                inquiryType = data['inquiryType'],
+                message = data['message']
+            )
+            db.session.add(new_contact)
+            db.session.commit()
+            return jsonify({'message': 'Message received!'}), 201
+        
+        except KeyError as e:
+            return jsonify({'error': 'Missing required field: {}'.format(str(e))}), 400
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
 
 if __name__ == "__main__":
