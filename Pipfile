@@ -7,6 +7,11 @@ name = "pypi"
 flask-restful = "*"
 flask-bcrypt = "*"
 firebase-admin = "*"
+flask-sqlalchemy = "*"
+flask-cors = "*"
+flask-migrate = "*"
+flask = "*"
+flask-jwt-extended = "*"
 
 [dev-packages]
 
