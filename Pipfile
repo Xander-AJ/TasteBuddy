@@ -12,6 +12,7 @@ flask-cors = "*"
 flask-migrate = "*"
 flask = "*"
 flask-jwt-extended = "*"
+sqlalchemy-serializer = "*"
 
 [dev-packages]
 
