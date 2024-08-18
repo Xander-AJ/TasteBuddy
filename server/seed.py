@@ -2,9 +2,16 @@ from datetime import datetime
 from app import app
 from models import db, User, Recipe, Bookmark, Like, Notification, Rating, Comment, Contact
 from flask_bcrypt import Bcrypt
+import json
 
 # Initialize Bcrypt
 bcrypt = Bcrypt(app)
+
+# Load recipe data from db.json
+with open('db.json') as f:
+    data = json.load(f)
+
+recipes_data = data['recipes']
 
 with app.app_context():
 
@@ -46,41 +53,24 @@ with app.app_context():
         db.session.commit()
 
     def seed_recipes():
-        recipe1 = Recipe(
-            chefName='Chef John',
-            chefImage='https://img.freepik.com/free-photo/head-cook-throwing-fresh-chopped-herbs-pan-improve-taste-meal-while-professional-kitchen-master-chef-seasoning-dish-prepared-food-contest-held-fine-dining-restaurant_482257-40137.jpg?ga=GA1.2.1322605301.1720433628&semt=ais_hybrid',
-            title='Spaghetti Carbonara',
-            image='https://img.freepik.com/free-photo/pasta-plate-chopping-board-with-fork_23-2148357206.jpg?t=st=1723926966~exp=1723930566~hmac=6c8ea80cf3409e569e0af4c45145f9635731c1c03f4a1f041130ef885777c16b&w=740',
-            ingredients='Spaghetti, eggs, pancetta, parmesan, garlic',
-            instructions='Cook spaghetti, mix with eggs and cheese, add pancetta and garlic.',
-            url='http://example.com/spaghetti-carbonara',
-            moreInfoUrl='http://example.com/more-info-spaghetti-carbonara',
-            rating=5,
-            prepTime='30 minutes',
-            servings=4,
-            countryOfOrigin='Italy',
-            dietType='Non-Vegetarian',
-            userId=1
-        )
-
-        recipe2 = Recipe(
-            chefName='Chef Jane',
-            chefImage='https://img.freepik.com/free-photo/horizontal-shot-young-attractive-african-cook-cutting-vegetables-with-knife_181624-52268.jpg?ga=GA1.2.1322605301.1720433628&semt=ais_hybrid',
-            title='Chicken Biryani',
-            image='https://plus.unsplash.com/premium_photo-1694141251673-1758913ade48?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            ingredients='1 whole Chicken (Cut into 8 pieces), 5 whole tomatoes (chopped), 6 onions Sliced, (Deep fried until golden and crispy),1 chilli (Chopped), 3 tbsp tomato paste, 1–2 tbsp Cumin (ground), 1 tbsp sugar, 1 tsp cinnamon (ground), 1/4 tsp cloves (ground), 1 tsp cardamom (ground), 1 tsp black pepper, 1 tsp ginger (crushed), 1 tsp garlic (crushed). 1 1/2 cup water, 3 potatoes (peeled; halved & deep fried), 3 tbsp Coriander (roughly chopped), 1 chilli (chopped), 1/2 cup Mala (or natural yoghurt)',
-            instructions='In a thick bottomed pan, add 1 tbsp ghee followed by the tomato paste and fry it for 1 min on medium heat, Add 1 tbsp cumin, 1/2 tsp ground cinnamon, 1 tsp ground cardamom, 1/2 tsp black pepper and a few cloves (4-5), Cook the spices for 2 min then add the chopped tomatoes and cover the pan, After 13 min, add the chicken, garlic, ginger, fresh chilly and, salt, Cover and cook until chicken soften (about 15min), Add 1/2 cup of mala or natural yoghurt cover and reduce the heat, Deep fry your sliced onions if you haven’t and also fry the potatoes until a skin forms, Add the deep friend and onions and potatoes to the biryani, Cook until the potatoes are soft, Serve with rice.',
-            url='http://example.com/greek-salad',
-            moreInfoUrl='http://example.com/more-info-greek-salad',
-            rating=4,
-            prepTime='15 minutes',
-            servings=2,
-            countryOfOrigin='Kenya',
-            dietType='Meatarian',
-            userId=2  # Link to the user created above
-        )
-        db.session.add(recipe1)
-        db.session.add(recipe2)
+        for recipe in recipes_data:
+            new_recipe = Recipe(
+                chefName=recipe['chefName'],
+                chefImage=recipe['chefImage'],
+                title=recipe['title'],
+                image=recipe['image'],
+                ingredients=recipe['ingredients'],
+                instructions=recipe['instructions'],
+                url=recipe['url'],
+                moreInfoUrl=recipe['moreInfoUrl'],
+                rating=recipe['rating'],
+                prepTime=recipe['prepTime'],
+                servings=recipe['servings'],
+                countryOfOrigin=recipe['countryOfOrigin'],
+                dietType=recipe['dietType'],
+                userId=recipe.get('userId')  # Assuming userId is optional
+            )
+            db.session.add(new_recipe)
         db.session.commit()
 
     def seed_bookmarks():

@@ -143,7 +143,7 @@ def delete_user(id):
 # ================================== RECIPES ROUTES ===========================================================
 # Get All Recipes
 @app.route('/recipes', methods=['GET'])
-@jwt_required()
+# @jwt_required()
 def get_recipes():
     recipes = Recipe.query.all()
     return jsonify([recipe.to_dict() for recipe in recipes]), 200
