@@ -17,6 +17,8 @@ db = SQLAlchemy()
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
+    serialize_rules = ('-password', '-notifications.user', '-comments.user', '-recipes.user', '-bookmarks.user', '-likes.user', '-ratings.user')
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -60,6 +62,7 @@ class User(db.Model, SerializerMixin):
             'likes': [like.to_dict() for like in self.likes],
             'ratings': [rating.to_dict() for rating in self.ratings],
             'notifications': [notification.to_dict() for notification in self.notifications],
+            'comments': [comment.to_dict() for comment in self.comments],
         }
     
     def __repr__(self):
@@ -70,6 +73,8 @@ class User(db.Model, SerializerMixin):
 
 class Recipe(db.Model, SerializerMixin):
     __tablename__ = 'recipes'
+
+    serialize_rules = ('-user', '-bookmarks.recipe', '-likes.recipe', '-ratings.recipe', '-comments.recipe')
 
     id = db.Column(db.Integer, primary_key=True)
     chefName = db.Column(db.String, nullable=False)
@@ -113,6 +118,7 @@ class Recipe(db.Model, SerializerMixin):
             'bookmarks': [bookmark.to_dict() for bookmark in self.bookmarks],
             'likes': [like.to_dict() for like in self.likes],
             'ratings': [rating.to_dict() for rating in self.ratings],
+            'comments': [comment.to_dict() for comment in self.comments],
         }
     
     def __repr__(self):
@@ -124,6 +130,8 @@ class Recipe(db.Model, SerializerMixin):
 class Bookmark(db.Model, SerializerMixin):
 
     __tablename__ = 'bookmarks'
+
+    serialize_rules = ('-user.bookmarks', '-recipe.bookmarks')
 
     id = db.Column(db.Integer, primary_key=True)
     userId = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -148,6 +156,8 @@ class Bookmark(db.Model, SerializerMixin):
 class Like(db.Model, SerializerMixin):
     __tablename__ = "likes"
 
+    serialize_rules = ('-user.likes', '-recipe.likes')
+
     id = db.Column(db.Integer, primary_key=True)
     userId = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     recipeId = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable=False)
@@ -170,6 +180,8 @@ class Like(db.Model, SerializerMixin):
 
 class Rating(db.Model, SerializerMixin):
     __tablename__ = "ratings"
+
+    serialize_rules = ('-user.ratings', '-recipe.ratings')
 
     id = db.Column(db.Integer, primary_key=True)
     userId = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -194,6 +206,8 @@ class Rating(db.Model, SerializerMixin):
 
 class Notification(db.Model, SerializerMixin):
     __tablename__ = "notifications"
+
+    serialize_rules = ('-user.notifications')
 
     id = db.Column(db.Integer, primary_key=True)
     userId = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -221,6 +235,8 @@ class Comment(db.Model, SerializerMixin):
 
     __tablename__ = "comments"
 
+    serialize_rules = ('-user.comments', '-recipe.comments')
+
     id = db.Column(db.Integer, primary_key=True)
     recipeId = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable=False)
     userId = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -235,12 +251,12 @@ class Comment(db.Model, SerializerMixin):
             'id': self.id,
             'recipeId': self.recipeId,
             'userId': self.userId,
-            'comment': self.comment,
+            'comment': self.content,
             'timestamp': self.timestamp.isoformat(),
         }
  
     def __repr__(self):
-        return f'<Comment {self.id}, {self.content}, {self.timestamp}>'
+        return f'<Comment {self.id}, {self.recipeId}, {self.content}, {self.timestamp}>'
 
 
 #======================================= CONTACTUS MODEL =========================================================
