@@ -5,6 +5,7 @@ import { VscLockSmall } from "react-icons/vsc";
 import { TbEyeClosed } from "react-icons/tb";
 import { RiEyeCloseFill } from "react-icons/ri";
 import { Link, useNavigate } from "react-router-dom";
+import api from '../../api';
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,6 +14,7 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
   const [error, setError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -32,6 +34,7 @@ const SignUp = () => {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
+    setFirstName("");
     setShowPassword(false);
     setShowConfirmPassword(false);
     setError("");
@@ -43,42 +46,43 @@ const SignUp = () => {
     setError("");
     setPasswordError("");
     setEmailError("");
-
+  
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
-
+  
     if (password.length < 6) {
       setPasswordError("Password should be at least 6 characters");
       return;
     }
-
+  
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, username }),
+      const response = await api.post('/api/auth/signup', { 
+        email, 
+        password, 
+        confirmPassword, 
+        username, 
+        firstName 
       });
-
-      if (response.ok) {
+  
+      if (response.status === 201) {
         setShowSuccessAlert(true);
         resetForm();
         setTimeout(() => {
           navigate('/login');
         }, 3000);
-      } else {
-        const data = await response.json();
-        if (data.message.includes("Email already registered")) {
-          setEmailError("The email address is already in use. Please proceed to login.");
-        } else {
-          setError(data.message);
-        }
       }
     } catch (error) {
-      setError("An error occurred during sign up. Please try again.");
+      if (error.response && error.response.data) {
+        if (error.response.data.message.includes("Email already registered")) {
+          setEmailError("The email address is already in use. Please proceed to login.");
+        } else {
+          setError(error.response.data.message);
+        }
+      } else {
+        setError("An error occurred during sign up. Please try again.");
+      }
     }
   };
 
@@ -259,11 +263,16 @@ const SignUp = () => {
             </button>
           </form>
           <p className="mt-4 font-semibold text-center">
-            Already have an account?{" "}
-            <Link to="/login" className="text-green-800">
-              Sign in
-            </Link>
-          </p>
+      Already have an account?{" "}
+      <Link to="/login" className="text-green-800">
+        Sign in
+      </Link>
+    </p>
+    <p className="mt-2 font-semibold text-center">
+      <Link to="/" className="text-green-800">
+        Back to Homepage
+      </Link>
+    </p>
         </div>
         <div className="w-full md:w-1/2 hidden md:block">
           <img

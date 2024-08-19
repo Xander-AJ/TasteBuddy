@@ -23,12 +23,12 @@ class User(db.Model, SerializerMixin):
     is_admin = db.Column(db.Boolean, default=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
-    firstName = db.Column(db.String(120), nullable=False)
-    lastName = db.Column(db.String(120), nullable=False)
-    title = db.Column(db.String(120), nullable=False)
-    aboutMe = db.Column(db.Text)
-    profilePicture = db.Column(db.String)
+    password = db.Column(db.String(255), nullable=False)
+    firstName = db.Column(db.String(80), nullable=True)
+    lastName = db.Column(db.String(80), nullable=True)
+    title = db.Column(db.String(120), nullable=True)
+    aboutMe = db.Column(db.Text, nullable=True)
+    profilePicture = db.Column(db.String(255), nullable=True)
 
     bookmarks = db.relationship('Bookmark', back_populates='user', lazy=True, cascade='all, delete-orphan')
     likes = db.relationship('Like', back_populates='user', lazy=True, cascade='all, delete-orphan')
@@ -97,6 +97,23 @@ class Recipe(db.Model, SerializerMixin):
     user = db.relationship('User', back_populates='recipes', lazy=True)
     comments = db.relationship('Comment', back_populates='recipe', lazy=True, cascade='all, delete-orphan')
     
+    def add_bookmark(self, user):
+        bookmark = Bookmark(userId=user.id, recipeId=self.id)
+        db.session.add(bookmark)
+        db.session.commit()
+    
+    def remove_bookmark(self, user):
+        bookmark = Bookmark.query.filter_by(userId=user.id, recipeId=self.id).first()
+        if bookmark:
+            db.session.delete(bookmark)
+            db.session.commit()
+        
+    def add_comment(self, user, content):
+        comment = Comment(userId=user.id, recipeId=self.id, content=content)
+        db.session.add(comment)
+        db.session.commit()
+        return comment
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -118,6 +135,7 @@ class Recipe(db.Model, SerializerMixin):
             'ratings': [rating.to_dict() for rating in self.ratings],
             'comments': [comment.to_dict() for comment in self.comments],
         }
+
     
     def __repr__(self):
         return f'<Recipe {self.id}, {self.chefName}, {self.title}, {self.dietType}, {self.countryOfOrigin}, {self.comments}>'
@@ -284,6 +302,5 @@ class Contact(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f'<Contact {self.id}, {self.firstName}, {self.email}, {self.phoneNumber}, {self.inquiryType}, {self.message}>'
-
 
 

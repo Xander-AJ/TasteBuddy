@@ -5,6 +5,8 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from models import db
 from config import Config
+from flask_cors import cross_origin
+
 
 # Import your blueprints
 from routes.auth import auth, BLACKLIST
@@ -26,7 +28,9 @@ db.init_app(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
-CORS(app)
+
+# Enable CORS
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 # Register blueprints
 app.register_blueprint(auth, url_prefix='/api/auth')
@@ -38,7 +42,6 @@ app.register_blueprint(ratings, url_prefix='/api/ratings')
 app.register_blueprint(notifications, url_prefix='/api/notifications')
 app.register_blueprint(comments, url_prefix='/api/comments')
 app.register_blueprint(contact, url_prefix='/api/contact')
-app.register_blueprint(admin, url_prefix='/api/admin')
 
 # JWT token blacklist check
 @jwt.token_in_blocklist_loader

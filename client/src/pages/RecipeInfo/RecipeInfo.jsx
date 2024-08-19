@@ -12,41 +12,73 @@ import {
 const RecipeInfo = () => {
   const { recipeId } = useParams();
   const [recipe, setRecipe] = useState(null);
+  const [rating, setRating] = useState(0);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [comment, setComment] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
         const response = await api.get(`/api/recipes/${recipeId}`);
         setRecipe(response.data);
+        setComments(response.data.comments || []);
+        setIsBookmarked(response.data.isBookmarked || false);
       } catch (error) {
         console.error('Error fetching recipe:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchRecipe();
   }, [recipeId]);
 
-  const handleRating = (newRating) => {
-    setRating(newRating);
+  const handleRating = async (newRating) => {
+    try {
+      await api.post(`/api/recipes/${recipeId}/rate`, { rating: newRating });
+      setRating(newRating);
+    } catch (error) {
+      console.error('Error rating recipe:', error);
+    }
   };
 
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
+  const handleBookmark = async () => {
+    try {
+      if (isBookmarked) {
+        await api.delete(`/api/recipes/${recipeId}/bookmark`);
+      } else {
+        await api.post(`/api/recipes/${recipeId}/bookmark`);
+      }
+      setIsBookmarked(!isBookmarked);
+    } catch (error) {
+      console.error('Error bookmarking recipe:', error);
+    }
   };
 
   const handleCommentChange = (e) => {
     setComment(e.target.value);
   };
 
-  const handleSubmitComment = (e) => {
+  const handleSubmitComment = async (e) => {
     e.preventDefault();
     if (comment.trim()) {
-      setComments([...comments, { author: "You", text: comment }]);
-      setComment("");
+      try {
+        const response = await api.post(`/api/recipes/${recipeId}/comment`, { content: comment });
+        setComments([...comments, response.data]);
+        setComment("");
+      } catch (error) {
+        console.error('Error submitting comment:', error);
+      }
     }
   };
 
-  if (!recipe) {
+  if (isLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (!recipe) {
+    return <div>Recipe not found</div>;
   }
 
   return (
@@ -88,7 +120,7 @@ const RecipeInfo = () => {
               <div className="flex flex-col items-center">
                 <FaUsers className="text-2xl mb-2 text-purple-500" />
                 <span className="font-semibold">
-                  {recipe.number_of_people_served} Serves
+                  {recipe.servings} Serves
                 </span>
               </div>
             </div>
@@ -126,14 +158,14 @@ const RecipeInfo = () => {
               </h2>
               <div className="flex items-center">
                 <span className="text-3xl font-bold text-yellow-500 mr-2">
-                  {rating.toFixed(1)}
+                  {recipe.rating.toFixed(1)}
                 </span>
                 <div className="flex">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <FaStar
                       key={star}
                       className={`text-2xl ${
-                        star <= Math.floor(rating)
+                        star <= Math.floor(recipe.rating)
                           ? "text-yellow-400"
                           : "text-gray-300"
                       }`}
@@ -183,7 +215,7 @@ const RecipeInfo = () => {
                   <p className="text-gray-800 font-semibold mb-1">
                     {comment.author}
                   </p>
-                  <p className="text-gray-600">{comment.text}</p>
+                  <p className="text-gray-600">{comment.content}</p>
                 </div>
               ))}
             </div>
