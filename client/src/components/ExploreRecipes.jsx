@@ -32,7 +32,7 @@ const ExploreRecipes = () => {
   const [bookmarkedRecipes, setBookmarkedRecipes] = useState([]);
 
   // Declare an URL variable for the db.json file
-  const URL = "http://localhost:3001/recipes";
+  const URL = "http://127.0.0.1:5555/recipes";
 
   // Fetch the recipes from the db.json file
   useEffect(() => {
