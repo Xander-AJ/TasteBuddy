@@ -7,11 +7,18 @@ recipes = Blueprint('recipes', __name__)
 recipe_schema = RecipeSchema()
 recipes_schema = RecipeSchema(many=True)
 
+
 @recipes.route("", methods=["GET"])
 @jwt_required()
 def get_recipes():
-    recipes = Recipe.query.all()
+    diet_type = request.args.get('dietType')
+    if diet_type:
+        recipes = Recipe.query.filter_by(dietType=diet_type).all()
+    else:
+        recipes = Recipe.query.all()
     return jsonify(recipes_schema.dump(recipes)), 200
+
+
 
 @recipes.route("/<int:id>", methods=["GET"])
 def get_recipe(id):
@@ -80,3 +87,9 @@ def get_user_recipes():
     current_user_id = get_jwt_identity()
     user_recipes = Recipe.query.filter_by(userId=current_user_id).all()
     return jsonify(recipes_schema.dump(user_recipes)), 200
+
+@recipes.route("/featured", methods=["GET"])
+def get_featured_recipes():
+    featured_recipes = Recipe.query.filter_by(featured=True).limit(5).all()
+    return jsonify(recipes_schema.dump(featured_recipes)), 200
+

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-
 import { FaBars, FaUser, FaSignInAlt, FaCaretDown } from "react-icons/fa";
 
 const NavBar = () => {
@@ -44,12 +43,25 @@ const NavBar = () => {
     checkLoginStatus();
   }, []);
 
-  const handleLogout = () => {
-    setIsProfileDropdownOpen(false);
-    setIsLoggedIn(false);
-    localStorage.removeItem('token');
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        setIsProfileDropdownOpen(false);
+        setIsLoggedIn(false);
+        localStorage.removeItem('token');
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
+  
 
   return (
     <div className="w-full sticky top-0 z-50">
